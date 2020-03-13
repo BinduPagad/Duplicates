@@ -234,3 +234,53 @@ public class duplicateWrapperClass {
         @AuraEnabled public  String recordList2;
     }
 }
+
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickAction" access="global" controller="duplicateWrapperClass" >
+    <aura:handler name="init" value="{!this}" action="{!c.loadData}"/>
+    <aura:attribute name="wrapperList" type="List" />
+    <aura:attribute name="Fields" type="List" />
+     <aura:attribute name="Records1" type="List" />
+     <aura:attribute name="Records2" type="List" />
+    <div class="slds-p-around--large">
+        <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+            <thead>
+                <tr class="slds-text-title--caps">
+                    <th scope="col">
+                        <div class="slds-truncate" title="Fields">Fields</div>
+                    </th>
+                    <th scope="col">
+                        <div class="slds-truncate" title="Contact 1">Contact 1</div>
+                    </th>
+                    <th scope="col">
+                        <div class="slds-truncate" title="Contact 2">Contact 2</div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>               
+                <aura:iteration items="{!v.wrapperList}" var="con">
+                    <tr>
+                        <td>{!con.fieldName} </td>
+                        <td>{!con.recordList1} </td>
+                        <td>{!con.recordList2} </td>
+                    </tr>
+                </aura:iteration>                                    
+            </tbody>
+        </table>
+    </div>
+</aura:component>
+
+({
+    loadData: function(component, event, helper) {
+        var action = component.get('c.doThisMethod');
+        action.setCallback(this, function(response) {
+            var state = response.getState();
+            if (state === "SUCCESS") {
+                var a =response.getReturnValue();
+                console.log(a);                
+                component.set('v.wrapperList', a);
+                console.log("v.wrapper::"+ component.get('v.wrapperList'));
+            }
+        });
+        $A.enqueueAction(action);
+    },
+})
