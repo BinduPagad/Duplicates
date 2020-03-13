@@ -1,0 +1,378 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" controller="duplicateWrapperClass" access="global" >
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <aura:attribute name="LeadValue" type="boolean" default="false"/>
+    <aura:attribute name="AccountValue" type="boolean" default="false"/>
+    <aura:attribute name="ContactValue" type="boolean" default="false"/>
+    <aura:attribute name="isModalOpen" type="boolean" default="false"/>
+    <aura:attribute name="EnableButton" type="boolean" default="true"/>
+    <aura:attribute name="selectedRowsCount" type="integer" default="0" />
+    <aura:attribute name="EnableButtonPopup" type="boolean" default="true"/>
+    <aura:attribute name="isModalOpen1" type="boolean" default="false"/>
+    <aura:attribute type="Object" name="conList"/>
+    <aura:attribute name="mycolumns" type="List"/>
+    <aura:attribute name="DynamicValue12" type="string" />
+    <aura:attribute name="objectName" type="string" />
+    <aura:handler name="init" value="{!this}" action="{!c.loadData}"/>
+    <aura:attribute name="wrapperList" type="List" />
+    <aura:attribute name="Fields" type="List" />
+    <aura:attribute name="Records1" type="List" />
+    <aura:attribute name="Records2" type="List" />
+    <aura:attribute name="options"
+                    type="List"
+                    default="[
+                             {'label': 'First Name', 'value': 'FirstName'},
+                             {'label': 'Last Name', 'value': 'LastName'},
+                             {'label': 'Phone', 'value': 'Phone'},
+                             ]"/>
+    <aura:attribute name="selectedValues" type="List" default="Name"/>
+    <aura:attribute name="radiobutton" type="List" default="[
+                                                            {'label': 'Use as Master Record1', 'value': 'masterRec1'},
+                                                            {'label': 'Use as Master Record2', 'value': 'masterRec2'}
+                                                            ]"/>
+    <aura:attribute name="radiobuttonValue" type="String" />
+    <div class="row">
+        <p class="title">Select Object</p>
+        <ui:inputSelect label="Select : " class="dynamic" aura:id="InputSelectDynamic" change="{!c.onChange}" />
+        <p>Selected Items:</p>
+        <p><ui:outputText class="result" value="{!v.DynamicValue12}" /></p>
+    </div>
+    <aura:if isTrue="{!v.LeadValue}">
+        <lightning:checkboxGroup aura:id="mygroup"
+                                 name="checkboxGroup"
+                                 label="Select Fields"
+                                 options="{! v.options }"
+                                 value="{! v.selectedValues }"
+                                 />
+    </aura:if>
+    <aura:if isTrue="{!v.AccountValue}">
+        <lightning:checkboxGroup aura:id="mygroup"
+                                 name="checkboxGroup"
+                                 label="Select Fields"
+                                 options="{! v.options }"
+                                 value="{! v.selectedValues }"
+                                 />
+    </aura:if>
+    <aura:if isTrue="{!v.ContactValue}">
+        <lightning:checkboxGroup aura:id="mygroup"
+                                 name="checkboxGroup"
+                                 label="Select Fields"
+                                 options="{! v.options }"
+                                 value="{! v.selectedValues }"
+                                 />
+    </aura:if>
+    <br></br>
+    <lightning:button label="Next" title="Neutral action" disabled ="{!v.EnableButton}" onclick="{! c.openModel }"/>
+    <aura:if isTrue="{!v.isModalOpen}">
+        <!-- Modal/Popup Box starts here-->
+        <section role="dialog" tabindex="1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- Modal/Popup Box Header Starts here-->
+                <header class="slds-modal__header">
+                    <p><b> Duplicate Records List</b></p> 
+                    <p> View Records</p>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <lightning:datatable data="{!v.conList }"
+                                         columns="{!v.mycolumns }"
+                                         keyField="id"
+                                         hideCheckboxColumn="false"
+                                         onrowselection = "{!c.handleRowAction}"/>
+                </div>
+                <div class="slds-modal__footer">
+                    <lightning:button variant="neutral" 
+                                      label="Cancel"
+                                      title="Cancel"
+                                      onclick="{!c.closeModel }"/>
+                    
+                    <lightning:button variant="brand"
+                                      label="Next"
+                                      disabled="{!v.EnableButtonPopup}"
+                                      onclick="{! c.nextModalPopup }"/>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+    <aura:if isTrue="{!v.isModalOpen1}">
+        <!-- Modal/Popup Box starts here-->
+        <section role="dialog" tabindex="1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- Modal/Popup Box Header Starts here-->
+                <header class="slds-modal__header">
+                    <p> <b>Potential Duplicate Records</b></p>
+                    <p> Compare Records</p>
+                    <lightning:radioGroup name="myFruits" 
+                                          label="Select Master"
+                                          options="{!v.radiobutton }"
+                                          value="{!v.radiobuttonValue }"
+                                          type="radio"
+                                          class="customRadioCls"
+                                          />
+                    <div class="slds-p-around--large">
+                        <table class="slds-table slds-table--bordered slds-table--cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title--caps">
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Fields">Fields</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Record 1">Record 1</div>
+                                    </th>
+                                    <th scope="col">
+                                        <div class="slds-truncate" title="Record 2">Record 2</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>               
+                                <aura:iteration items="{!v.wrapperList}" var="con">
+                                    <tr>
+                                        <td>{!con.fieldName} </td>
+                                        <td>{!con.recordList1} </td>
+                                        <td>{!con.recordList2} </td>
+                                    </tr>
+                                </aura:iteration>                                    
+                            </tbody>
+                        </table>
+                    </div>
+                </header>
+                <!--<footer>
+                    <lightning:button variant="neutral" 
+                                      label="Merge"
+                                      title="Merge"
+                                      onclick="{!c.mergeFields}"/>
+                </footer>-->
+                <div class="slds-modal__footer">
+                    <lightning:button variant="neutral" 
+                                      label="Cancel"
+                                      title="Cancel"
+                                      onclick="{!c.closeModel1}"/>
+                    <lightning:button variant="brand"
+                                      label="Save"	
+                                      disabled="false"/>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </aura:if>
+</aura:component>
+
+
+
+({
+    doInit : function(cmp) {
+        var opts = [
+            { "class": "optionClass", label: "Choose", value: "choose", selected: "true" },
+            { "class": "optionClass", label: "Lead", value: "lead" },
+            { "class": "optionClass", label: "Account", value: "account" },
+            { "class": "optionClass", label: "Contact", value: "contact" }
+        ];
+        cmp.find("InputSelectDynamic").set("v.options", opts);
+    },
+    onChange: function(cmp,event,helper) {
+        var dynamicCmp = cmp.find("InputSelectDynamic").get("v.value");
+        cmp.set("v.objectName",dynamicCmp);
+        if(dynamicCmp != null){
+            cmp.set('v.EnableButton',false);
+        }
+        console.log('dynamicCmp==',dynamicCmp);
+        if(dynamicCmp == 'contact'){
+            cmp.set("v.ContactValue",true);
+            cmp.set("v.AccountValue",false);
+            cmp.set("v.LeadValue",false);
+            cmp.set("v.DynamicValue12",dynamicCmp);
+            console.log('Value of '+DynamicValue12);
+        }
+        if(dynamicCmp == 'account'){
+            cmp.set("v.AccountValue",true);
+            cmp.set("v.ContactValue",false);
+            cmp.set("v.LeadValue",false);
+            cmp.set("v.DynamicValue12",dynamicCmp);
+            console.log('Value of '+DynamicValue12);
+        }
+        if(dynamicCmp == 'lead'){
+            cmp.set("v.LeadValue",true);
+            cmp.set("v.ContactValue",false);
+            cmp.set("v.AccountValue",false);
+            cmp.set("v.DynamicValue12",dynamicCmp);
+            console.log('Value of '+DynamicValue12);
+        }
+        resultCmp.set("v.value", dynamicvalues.get("v.value"));
+        console.log('resultCmp'+resultCmp.set("v.value", dynamicvalues.get("v.value")));
+    },
+    openModel: function(cmp, event, helper) {
+        let selectedFields = [];
+        cmp.set('v.isModalOpen', true);
+        cmp.set('v.mycolumns', [
+            {label: 'First Name', fieldName: 'FirstName', type: 'text'},
+            {label: 'Last Name', fieldName: 'LastName', type: 'text'},
+            {label: 'Phone', fieldName: 'Phone', type: 'text'}
+        ]);
+        var action = cmp.get('c.fetchConDuplicates');
+        action.setParams({
+            fields: cmp.get('v.selectedValues'),
+            objName : cmp.get('v.objectName'),
+            names : ''
+        });
+        console.log('selectedFields '+selectedFields);
+        console.log('object '+cmp.get('v.objectName'));
+        action.setCallback(this, function(response){
+            var state = response.getState();
+            //alert('State=='+state);
+            if (state === "SUCCESS") {
+                // alert('response'+response.getReturnValue());
+                cmp.set('v.conList', response.getReturnValue());
+                console.log('conlist=='+cmp.get("v.conList"));
+            }
+            else if(state === "ERROR") {
+                Console.log('error');
+            }
+        });
+        $A.enqueueAction(action);
+    },
+    closeModel: function(cmp, event, helper) {
+        cmp.set("v.isModalOpen", false);
+    },
+    handleRowAction :function(cmp, event, helper) {
+        var selectedRows = event.getParam('selectedRows');
+        cmp.set('v.selectedRowsCount', selectedRows.length);
+        if(selectedRows.length>0){
+            cmp.set('v.EnableButtonPopup',false);
+        }
+    },
+    nextModalPopup : function(cmp, event, helper) {
+        cmp.set('v.isModalOpen', false);
+        cmp.set('v.isModalOpen1', true);
+    },
+    closeModel1: function(cmp, event, helper) {
+        cmp.set("v.isModalOpen1", false);
+    },
+     loadData: function(cmp, event, helper) {
+        var action = cmp.get('c.doThisMethod');
+         action.setParams({
+             strObjName : cmp.get('v.objectName')
+         });
+        action.setCallback(this, function(response) {
+            var state = response.getState();
+            if (state === "SUCCESS") {
+                var a =response.getReturnValue();
+                console.log(a);                
+                component.set('v.wrapperList', a);
+                console.log("v.wrapper::"+ component.get('v.wrapperList'));
+            }
+        });
+        $A.enqueueAction(action);
+    },
+  
+})
+
+
+public class duplicateWrapperClass {
+    @AuraEnabled
+    public static List<sobject> fetchConDuplicates(List<string> fields, string objName , List<string> names){
+        system.debug('fields'+fields.size());
+        string s ='';
+        for(string a : fields){
+            s += a+',';
+        }
+        String str=s;
+        str=str.removeEnd(',');
+        system.debug('str==='+str);
+        string genQuery = 'select '+str+' from '+objName ;
+        system.debug('genQuery'+genQuery);
+        list<sObject> sobjList =Database.query(genQuery);
+        system.debug('sobjList'+sobjList);
+        return sobjList;
+    }
+    @AuraEnabled 
+    public static List<wrapperClassReturn> doThisMethod(){
+        List<wrapperClassReturn> wrapperReturnList = new List<wrapperClassReturn> ();
+        wrapperClass wrapperFetch = new wrapperClass();
+        String querystr ;
+        List<contact> al;        
+        querystr = 'select id';
+        
+        //Get Object Details
+        map<String,Schema.SObjectType>  GlobalDescribeMap = Schema.getGlobalDescribe();
+        Schema.SObjectType SObjectTypeObj = GlobalDescribeMap.get('contact');
+        Schema.DescribeSObjectResult DescribeSObjectResultObj = SObjectTypeObj.getDescribe();
+        map<String,schema.SObjectField> describeObjectFields = SObjectTypeObj.getDescribe().fields.getMap();
+        system.debug('describeObjectFields=='+describeObjectFields);
+        
+        //Get FieldSet Details
+        Schema.FieldSet  fieldSetObj = DescribeSObjectResultObj.FieldSets.getMap().get('Duplicate_Contact_List_Fields');
+        List<Schema.FieldSetMember> fieldset = fieldSetObj.getFields();
+        system.debug('fieldset=='+fieldset);
+        
+        for(Schema.FieldSetMember fsm :fieldset) {
+            querystr += ', ' + fsm.getFieldPath();
+            system.debug('querystr'+querystr);
+        }
+      querystr+= ' from Contact limit 2'  ;
+        //querystr =  ' from '+strObjName +'limit 2';
+        system.debug('querystr'+querystr);
+        al= Database.query(querystr);
+        //al =Database.query(querystr);
+        system.debug('al=='+al);
+        
+        Map<String,String> mapObj1 = new Map<String,String>();   
+        mapObj1.put('Id',al[0].Id);
+        mapObj1.put('FirstName',al[0].FirstName);
+        mapObj1.put('LastName',al[0].LastName);
+        mapObj1.put('Phone',al[0].Phone);
+        mapObj1.put('Languages__c',al[0].Languages__c);
+        mapObj1.put('Email',al[0].Email);
+        system.debug('mapObj1=='+mapObj1);
+        
+        Map<String,String> mapObj2 = new Map<String,String>();   
+        mapObj2.put('Id',al[1].Id);
+        mapObj2.put('FirstName',al[1].FirstName);
+        mapObj2.put('LastName',al[1].LastName);
+        mapObj2.put('Phone',al[1].Phone);
+        mapObj2.put('Languages__c',al[1].Languages__c);
+        mapObj2.put('Email',al[1].Email);
+        system.debug('mapObj1=='+mapObj2);
+        
+        List<String> listRecord1 = new List<string>();
+        listRecord1.add(al[0].id);
+        listRecord1.add(al[0].firstname);
+        listRecord1.add(al[0].lastname);
+        listRecord1.add(al[0].phone);
+        listRecord1.add(al[0].Languages__c);
+        listRecord1.add(al[0].Email);
+        system.debug('listRecord1'+listRecord1);
+        
+        List<String> listRecord2 = new List<string>();
+        listRecord2.add(al[1].id);
+        listRecord2.add(al[1].firstname);
+        listRecord2.add(al[1].lastname);
+        listRecord2.add(al[1].phone);
+        listRecord2.add(al[1].Languages__c);
+        listRecord2.add(al[1].Email);
+        system.debug('listRecord2'+listRecord2);
+                
+        for(Schema.FieldSetMember s:fieldset){
+            wrapperClassReturn tempDetails = new wrapperClassReturn();
+            tempDetails.fieldName = s.getFieldPath();
+            if(mapObj1.get(s.getFieldPath()) != null){
+                tempDetails.recordList1 = mapObj1.get(s.getFieldPath());
+            }
+            if(mapObj2.get(s.getFieldPath()) != null){
+                tempDetails.recordList2 = mapObj2.get(s.getFieldPath());
+            }                  
+            wrapperReturnList.add(tempDetails);
+        }
+        return wrapperReturnList;
+    }
+    
+    public class wrapperClass{
+        @AuraEnabled public list<String> strList {get;set;}
+        @AuraEnabled public List<string> record1{get;set;}
+        @AuraEnabled public List<string> record2{get;set;}
+    }
+    
+    public class wrapperClassReturn{
+        @AuraEnabled public String fieldName;
+        @AuraEnabled public String recordList1;
+        @AuraEnabled public  String recordList2;
+    }
+}
